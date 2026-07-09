@@ -1,0 +1,15 @@
+# Binaries
+terraform-provider-claude-platform
+dist/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+.terraform.lock.hcl
+
+# Editor/OS
+.DS_Store
+.idea/
+.vscode/
