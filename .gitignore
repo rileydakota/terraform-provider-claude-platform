@@ -13,3 +13,6 @@ dist/
 .DS_Store
 .idea/
 .vscode/
+
+# local dev
+dev.tfrc
