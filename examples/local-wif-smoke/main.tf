@@ -37,7 +37,7 @@ variable "workspace_names" {
 variable "ci_subject" {
   type        = string
   description = "JWT subject the smoke-test rules match. Harmless placeholder by default — no real workload can satisfy it."
-  default     = "repo:rileydakota/does-not-exist:ref:refs/heads/main"
+  default     = "repo:example-org/does-not-exist:ref:refs/heads/main"
 }
 
 # One issuer shared by every workspace's rule.

@@ -36,9 +36,9 @@ module "team_atlas" {
 
   name              = "atlas"
   issuer_id         = claudeplatform_federation_issuer.github_actions.id
-  ci_subject_prefix = "repo:fluidstack/atlas:ref:refs/heads/main"
-  ci_match_claims   = { repository_owner = "fluidstack" }
-  admin_emails      = ["atlas-lead@fluidstack.io"]
+  ci_subject_prefix = "repo:my-org/atlas:ref:refs/heads/main"
+  ci_match_claims   = { repository_owner = "my-org" }
+  admin_emails      = ["atlas-lead@example.com"]
 
   oauth_scope            = "workspace:developer"
   token_lifetime_seconds = 900
@@ -49,8 +49,8 @@ module "team_arbiter" {
 
   name              = "arbiter"
   issuer_id         = claudeplatform_federation_issuer.github_actions.id
-  ci_subject_prefix = "repo:fluidstack/arbiter:ref:refs/heads/main"
-  ci_match_claims   = { repository_owner = "fluidstack" }
+  ci_subject_prefix = "repo:my-org/arbiter:ref:refs/heads/main"
+  ci_match_claims   = { repository_owner = "my-org" }
 
   # Inference-only: this team's CI can call Messages/Models but not manage
   # Files, Skills, or agents in the workspace.

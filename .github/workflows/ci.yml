@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: gofmt
+        run: test -z "$(gofmt -l .)" || (gofmt -l . && exit 1)
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: go build
+        run: go build ./...
+
+      - name: Unit tests (schema validation, no credentials)
+        run: go test ./... -v
+
+  terraform-examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: terraform fmt check
+        run: terraform fmt -recursive -check examples/ modules/
+
+      - name: Validate examples against dev-built provider
+        run: |
+          go install .
+          cat > "$RUNNER_TEMP/dev.tfrc" <<EOF
+          provider_installation {
+            dev_overrides {
+              "rileydakota/claude-platform" = "$(go env GOPATH)/bin"
+            }
+            direct {}
+          }
+          EOF
+          export TF_CLI_CONFIG_FILE="$RUNNER_TEMP/dev.tfrc"
+          for d in examples/*/; do
+            echo "== $d"
+            (cd "$d" && terraform get >/dev/null 2>&1 || true && terraform validate -no-color)
+          done

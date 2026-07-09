@@ -20,6 +20,6 @@ fmt:
 	terraform fmt -recursive examples/
 
 docs:
-	go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --provider-name claudeplatform
+	go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@latest generate --provider-name claudeplatform --rendered-provider-name "Claude Platform"
 
 .PHONY: default build install test testacc vet fmt docs

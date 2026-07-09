@@ -6,7 +6,8 @@ manage Claude platform workspaces, organization members, invites, API keys, and 
 surface (service accounts, federation issuers, federation rules) as code.
 
 > Status: early scaffold — compiles, schema-validated, not yet exercised against a live org.
-> See [DESIGN.md](./DESIGN.md) for the full design and roadmap.
+> See [DESIGN.md](./DESIGN.md) for the full design and roadmap. Licensed under
+> [MPL-2.0](./LICENSE).
 
 ## Resources
 
@@ -76,6 +77,20 @@ provider_installation {
 ```
 
 then `go install .` and run `terraform plan` (skip `terraform init`).
+
+## Releasing
+
+Releases are cut by pushing a `v*` tag; the [release workflow](.github/workflows/release.yml)
+runs GoReleaser to build, sign, and publish Terraform Registry-compatible artifacts.
+One-time setup for a fork/new namespace:
+
+1. Generate a GPG signing key; add `GPG_PRIVATE_KEY` and `PASSPHRASE` repo secrets.
+2. Publish the repo publicly (registry requires the `terraform-provider-*` name).
+3. Add the GPG public key in [registry.terraform.io](https://registry.terraform.io) →
+   Settings → Signing Keys, then publish the provider from the repo.
+4. `git tag v0.1.0 && git push --tags`.
+
+Registry docs under `docs/` are generated — edit schemas/examples, then `make docs`.
 
 ## Known API constraints the provider encodes
 
