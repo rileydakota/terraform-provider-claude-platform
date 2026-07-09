@@ -19,3 +19,7 @@ Explicit membership of a service account in a workspace. Required before a feder
 
 - `service_account_id` (String) Service account ID (svac_...).
 - `workspace_id` (String) Workspace ID (wrkspc_...).
+
+### Optional
+
+- `workspace_role` (String) Role the service account holds in the workspace.

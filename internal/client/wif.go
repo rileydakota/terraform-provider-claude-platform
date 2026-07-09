@@ -73,45 +73,37 @@ func (c *Client) ListServiceAccounts(ctx context.Context, includeArchived bool) 
 // Explicit workspace memberships. Every service account is implicitly a
 // member of the org's default workspace.
 
-func (c *Client) AddServiceAccountWorkspace(ctx context.Context, serviceAccountID, workspaceID string) error {
+func (c *Client) AddServiceAccountWorkspace(ctx context.Context, serviceAccountID, workspaceID, workspaceRole string) error {
 	if err := c.requireOAuth(); err != nil {
 		return err
 	}
-	body := map[string]string{"workspace_id": workspaceID}
+	body := map[string]string{"workspace_id": workspaceID, "workspace_role": workspaceRole}
 	return c.do(ctx, http.MethodPost, serviceAccountsPath+"/"+serviceAccountID+"/workspaces", nil, body, nil)
 }
 
-// serviceAccountWorkspaceEntry tolerates both plausible list-item shapes
-// (a membership object carrying workspace_id, or a workspace object with id).
-type serviceAccountWorkspaceEntry struct {
-	WorkspaceID string `json:"workspace_id"`
-	ID          string `json:"id"`
+// ServiceAccountWorkspaceMembership tolerates both plausible list-item
+// shapes (a membership object carrying workspace_id, or an object with id).
+type ServiceAccountWorkspaceMembership struct {
+	WorkspaceID   string `json:"workspace_id"`
+	ID            string `json:"id"`
+	WorkspaceRole string `json:"workspace_role"`
 }
 
-func (e serviceAccountWorkspaceEntry) workspace() string {
-	if e.WorkspaceID != "" {
-		return e.WorkspaceID
+// Workspace returns the workspace ID regardless of which field carried it.
+func (m ServiceAccountWorkspaceMembership) Workspace() string {
+	if m.WorkspaceID != "" {
+		return m.WorkspaceID
 	}
-	return e.ID
+	return m.ID
 }
 
-// ListServiceAccountWorkspaces returns the workspace IDs a service account
-// has an explicit membership in.
-func (c *Client) ListServiceAccountWorkspaces(ctx context.Context, serviceAccountID string) ([]string, error) {
+// ListServiceAccountWorkspaces returns the explicit workspace memberships of
+// a service account.
+func (c *Client) ListServiceAccountWorkspaces(ctx context.Context, serviceAccountID string) ([]ServiceAccountWorkspaceMembership, error) {
 	if err := c.requireOAuth(); err != nil {
 		return nil, err
 	}
-	entries, err := listAllCursor[serviceAccountWorkspaceEntry](ctx, c, serviceAccountsPath+"/"+serviceAccountID+"/workspaces", nil)
-	if err != nil {
-		return nil, err
-	}
-	ids := make([]string, 0, len(entries))
-	for _, e := range entries {
-		if id := e.workspace(); id != "" {
-			ids = append(ids, id)
-		}
-	}
-	return ids, nil
+	return listAllCursor[ServiceAccountWorkspaceMembership](ctx, c, serviceAccountsPath+"/"+serviceAccountID+"/workspaces", nil)
 }
 
 func (c *Client) RemoveServiceAccountWorkspace(ctx context.Context, serviceAccountID, workspaceID string) error {

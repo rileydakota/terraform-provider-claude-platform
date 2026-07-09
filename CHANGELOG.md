@@ -1,6 +1,15 @@
 # Changelog
 
-## Unreleased (initial development)
+## Unreleased
+
+### Fixed
+
+- `claudeplatform_service_account_workspace`: the membership endpoint requires
+  a `workspace_role` field (discovered on first live apply — the API returned
+  `400 workspace_role: Field required`). The resource now has a
+  `workspace_role` attribute, defaulting to `workspace_developer`.
+
+## v0.1.0
 
 ### Added
 

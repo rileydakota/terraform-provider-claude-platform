@@ -9,8 +9,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 
 	"github.com/rileydakota/terraform-provider-claude-platform/internal/client"
 )
@@ -31,6 +35,7 @@ type serviceAccountWorkspaceResource struct {
 type serviceAccountWorkspaceModel struct {
 	ServiceAccountID types.String `tfsdk:"service_account_id"`
 	WorkspaceID      types.String `tfsdk:"workspace_id"`
+	WorkspaceRole    types.String `tfsdk:"workspace_role"`
 }
 
 func (r *serviceAccountWorkspaceResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -52,6 +57,16 @@ func (r *serviceAccountWorkspaceResource) Schema(_ context.Context, _ resource.S
 			"workspace_id": schema.StringAttribute{
 				Required:      true,
 				Description:   "Workspace ID (wrkspc_...).",
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
+			"workspace_role": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString("workspace_developer"),
+				Description: "Role the service account holds in the workspace.",
+				Validators: []validator.String{
+					stringvalidator.OneOf("workspace_user", "workspace_developer", "workspace_admin", "workspace_billing"),
+				},
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 		},
@@ -76,7 +91,7 @@ func (r *serviceAccountWorkspaceResource) Create(ctx context.Context, req resour
 		return
 	}
 
-	err := r.client.AddServiceAccountWorkspace(ctx, plan.ServiceAccountID.ValueString(), plan.WorkspaceID.ValueString())
+	err := r.client.AddServiceAccountWorkspace(ctx, plan.ServiceAccountID.ValueString(), plan.WorkspaceID.ValueString(), plan.WorkspaceRole.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Error adding service account to workspace", err.Error())
 		return
@@ -92,7 +107,7 @@ func (r *serviceAccountWorkspaceResource) Read(ctx context.Context, req resource
 		return
 	}
 
-	ids, err := r.client.ListServiceAccountWorkspaces(ctx, state.ServiceAccountID.ValueString())
+	memberships, err := r.client.ListServiceAccountWorkspaces(ctx, state.ServiceAccountID.ValueString())
 	if err != nil {
 		if client.IsNotFound(err) { // service account gone (archived/removed)
 			resp.State.RemoveResource(ctx)
@@ -102,8 +117,11 @@ func (r *serviceAccountWorkspaceResource) Read(ctx context.Context, req resource
 		return
 	}
 
-	for _, id := range ids {
-		if id == state.WorkspaceID.ValueString() {
+	for _, m := range memberships {
+		if m.Workspace() == state.WorkspaceID.ValueString() {
+			if m.WorkspaceRole != "" {
+				state.WorkspaceRole = types.StringValue(m.WorkspaceRole)
+			}
 			resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 			return
 		}
