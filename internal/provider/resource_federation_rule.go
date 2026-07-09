@@ -176,10 +176,9 @@ func (r *federationRuleResource) ValidateConfig(ctx context.Context, req resourc
 
 	if config.Match != nil {
 		m := config.Match
-		hasAnchor := (!m.SubjectPrefix.IsNull() && !m.SubjectPrefix.IsUnknown()) ||
-			(!m.Claims.IsNull() && !m.Claims.IsUnknown()) ||
-			(!m.Condition.IsNull() && !m.Condition.IsUnknown())
-		if !hasAnchor {
+		// IsNull is false for unknown values (references resolved at apply),
+		// so unknowns correctly count as "possibly set" here.
+		if m.SubjectPrefix.IsNull() && m.Claims.IsNull() && m.Condition.IsNull() {
 			resp.Diagnostics.AddAttributeError(path.Root("match"),
 				"Insufficient match conditions",
 				"At least one of subject_prefix, claims, or condition must be set; a match block with "+
