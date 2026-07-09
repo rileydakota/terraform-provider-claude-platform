@@ -32,6 +32,7 @@ func TestProviderSchemas(t *testing.T) {
 		"claudeplatform_workspace_member",
 		"claudeplatform_organization_invite",
 		"claudeplatform_service_account",
+		"claudeplatform_service_account_workspace",
 		"claudeplatform_federation_issuer",
 		"claudeplatform_federation_rule",
 	}

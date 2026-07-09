@@ -81,6 +81,39 @@ func (c *Client) AddServiceAccountWorkspace(ctx context.Context, serviceAccountI
 	return c.do(ctx, http.MethodPost, serviceAccountsPath+"/"+serviceAccountID+"/workspaces", nil, body, nil)
 }
 
+// serviceAccountWorkspaceEntry tolerates both plausible list-item shapes
+// (a membership object carrying workspace_id, or a workspace object with id).
+type serviceAccountWorkspaceEntry struct {
+	WorkspaceID string `json:"workspace_id"`
+	ID          string `json:"id"`
+}
+
+func (e serviceAccountWorkspaceEntry) workspace() string {
+	if e.WorkspaceID != "" {
+		return e.WorkspaceID
+	}
+	return e.ID
+}
+
+// ListServiceAccountWorkspaces returns the workspace IDs a service account
+// has an explicit membership in.
+func (c *Client) ListServiceAccountWorkspaces(ctx context.Context, serviceAccountID string) ([]string, error) {
+	if err := c.requireOAuth(); err != nil {
+		return nil, err
+	}
+	entries, err := listAllCursor[serviceAccountWorkspaceEntry](ctx, c, serviceAccountsPath+"/"+serviceAccountID+"/workspaces", nil)
+	if err != nil {
+		return nil, err
+	}
+	ids := make([]string, 0, len(entries))
+	for _, e := range entries {
+		if id := e.workspace(); id != "" {
+			ids = append(ids, id)
+		}
+	}
+	return ids, nil
+}
+
 func (c *Client) RemoveServiceAccountWorkspace(ctx context.Context, serviceAccountID, workspaceID string) error {
 	if err := c.requireOAuth(); err != nil {
 		return err

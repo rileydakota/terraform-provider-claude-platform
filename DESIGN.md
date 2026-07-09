@@ -71,7 +71,7 @@ org with no static credentials — exactly the flow Anthropic documents in
 | `claudeplatform_organization_member` (roadmap) | `/users/{id}` | remove from org | adopt-only (users join via invite); manages `role` |
 | `claudeplatform_api_key` (roadmap) | `/api_keys/{id}` | set `inactive` | **import-only** — the API cannot create keys (Console only). Manages `name`/`status`. |
 | `claudeplatform_service_account` | `/service_accounts` | archive | OAuth-only; `organization_role` = `developer\|admin` (replace on change) |
-| `claudeplatform_service_account_workspace` (roadmap) | `/service_accounts/{id}/workspaces` | DELETE | explicit workspace membership (default workspace is implicit) |
+| `claudeplatform_service_account_workspace` | `/service_accounts/{id}/workspaces` | DELETE | explicit workspace membership (default workspace is implicit); **required before a rule can target the SA in a non-default workspace** |
 | `claudeplatform_federation_issuer` | `/federation_issuers` | archive | `jwks` union: `discovery` (+optional `discovery_base`) \| `explicit_url` \| `inline` (`keys_json`); optional `ca_cert_pem` |
 | `claudeplatform_federation_rule` | `/federation_rules` | archive | `match` (subject_prefix/audience/claims/condition-CEL), target service account, `workspace_id` xor `applies_to_all_workspaces`, `oauth_scope`, `token_lifetime_seconds` (60–86400) |
 | `claudeplatform_federation_rule_workspace` (roadmap) | `/federation_rules/{id}/workspaces` | DELETE | enable a rule in additional workspaces |

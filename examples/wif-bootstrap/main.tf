@@ -42,6 +42,13 @@ resource "claudeplatform_service_account" "inference" {
   organization_role = "developer"
 }
 
+# A federation rule can only target a service account that is a member of the
+# rule's workspace (implicit membership covers the default workspace only).
+resource "claudeplatform_service_account_workspace" "inference_ci" {
+  service_account_id = claudeplatform_service_account.inference.id
+  workspace_id       = claudeplatform_workspace.ci.id
+}
+
 # Register GitHub Actions as an OIDC issuer. Keep this issuer dedicated to
 # workspace-scoped rules — an issuer backing an org:admin rule can no longer
 # be updated through the API.
@@ -59,8 +66,8 @@ resource "claudeplatform_federation_issuer" "github_actions" {
 resource "claudeplatform_federation_rule" "gha_inference" {
   name               = "gha-inference"
   issuer_id          = claudeplatform_federation_issuer.github_actions.id
-  service_account_id = claudeplatform_service_account.inference.id
-  workspace_id       = claudeplatform_workspace.ci.id
+  service_account_id = claudeplatform_service_account_workspace.inference_ci.service_account_id
+  workspace_id       = claudeplatform_service_account_workspace.inference_ci.workspace_id
 
   oauth_scope            = "workspace:inference"
   token_lifetime_seconds = 600

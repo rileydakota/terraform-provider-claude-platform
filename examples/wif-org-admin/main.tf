@@ -98,6 +98,13 @@ resource "claudeplatform_service_account" "inference" {
   organization_role = "developer"
 }
 
+# A federation rule can only target a service account that is a member of the
+# rule's workspace (implicit membership covers the default workspace only).
+resource "claudeplatform_service_account_workspace" "inference_ci" {
+  service_account_id = claudeplatform_service_account.inference.id
+  workspace_id       = claudeplatform_workspace.ci.id
+}
+
 # Separate issuer for workspace-scoped rules, so it stays API-updatable.
 resource "claudeplatform_federation_issuer" "github_actions" {
   name       = "github-actions"
@@ -114,8 +121,8 @@ resource "claudeplatform_federation_issuer" "github_actions" {
 resource "claudeplatform_federation_rule" "app_inference" {
   name               = "app-inference"
   issuer_id          = claudeplatform_federation_issuer.github_actions.id
-  service_account_id = claudeplatform_service_account.inference.id
-  workspace_id       = claudeplatform_workspace.ci.id
+  service_account_id = claudeplatform_service_account_workspace.inference_ci.service_account_id
+  workspace_id       = claudeplatform_service_account_workspace.inference_ci.workspace_id
 
   oauth_scope            = "workspace:inference"
   token_lifetime_seconds = 600

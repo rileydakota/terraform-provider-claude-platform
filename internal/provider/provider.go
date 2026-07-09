@@ -185,6 +185,7 @@ func (p *claudePlatformProvider) Resources(_ context.Context) []func() resource.
 		NewWorkspaceMemberResource,
 		NewOrganizationInviteResource,
 		NewServiceAccountResource,
+		NewServiceAccountWorkspaceResource,
 		NewFederationIssuerResource,
 		NewFederationRuleResource,
 	}

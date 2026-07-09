@@ -16,6 +16,7 @@ surface (service accounts, federation issuers, federation rules) as code.
 | `claudeplatform_workspace_member` | import as `workspace_id/user_id` |
 | `claudeplatform_organization_invite` | invites expire server-side after 21 days |
 | `claudeplatform_service_account` | requires org:admin OAuth token |
+| `claudeplatform_service_account_workspace` | explicit workspace membership; required before a rule can target the SA in a non-default workspace |
 | `claudeplatform_federation_issuer` | requires org:admin OAuth token; `jwks` = discovery \| explicit_url \| inline |
 | `claudeplatform_federation_rule` | requires org:admin OAuth token; API-manageable scopes only (`workspace:developer`, `workspace:inference`) |
 
