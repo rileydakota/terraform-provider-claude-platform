@@ -1,0 +1,2 @@
+# Import using "service_account_id/workspace_id".
+terraform import claudeplatform_service_account_workspace.ci_ml_team svac_01MnOPqrs321/wrkspc_01WgQMyXabc123

@@ -1,5 +1,31 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Registry-layout examples (`examples/resources/<type>/resource.tf` +
+  `import.sh`, `examples/data-sources/<type>/data-source.tf`) for every
+  resource and data source; the generated registry docs now include Example
+  Usage and Import sections.
+- `golangci-lint` config (with a depguard rule banning SDKv2 imports) and a
+  CI lint job.
+- CI docs drift check: `make generate` must leave the tree clean.
+- Dependabot for Go modules and GitHub Actions.
+
+### Changed
+
+- `tfplugindocs` is now pinned in a `tools/` module (was `@latest`);
+  `make docs` runs `go generate` there, and a new `make generate` target
+  chains fmt + docs.
+
+### Fixed
+
+- CI `terraform fmt` check referenced the removed `modules/` directory and
+  silently passed despite erroring (the setup-terraform wrapper swallowed the
+  exit code). The check now targets `examples/` only and the wrapper is
+  disabled.
+
 ## v0.1.1
 
 ### Fixed

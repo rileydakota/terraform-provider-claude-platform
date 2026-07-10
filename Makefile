@@ -15,11 +15,16 @@ testacc:
 vet:
 	go vet ./...
 
+lint:
+	golangci-lint run
+
 fmt:
 	gofmt -w .
 	terraform fmt -recursive examples/
 
 docs:
-	go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@latest generate --provider-name claudeplatform --rendered-provider-name "Claude Platform"
+	cd tools && go generate ./...
 
-.PHONY: default build install test testacc vet fmt docs
+generate: fmt docs
+
+.PHONY: default build install test testacc vet lint fmt docs generate
