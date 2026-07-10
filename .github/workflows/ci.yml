@@ -19,17 +19,45 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - name: gofmt
-        run: test -z "$(gofmt -l .)" || (gofmt -l . && exit 1)
-
-      - name: go vet
-        run: go vet ./...
-
       - name: go build
         run: go build ./...
 
       - name: Unit tests (schema validation, no credentials)
         run: go test ./... -v
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - uses: golangci/golangci-lint-action@v8
+        with:
+          version: latest
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Regenerate docs and check for drift
+        run: |
+          make generate
+          git diff --compact-summary --exit-code || \
+            (echo "::error::Generated files are stale. Run 'make generate' and commit the result." && exit 1)
 
   terraform-examples:
     runs-on: ubuntu-latest
@@ -42,9 +70,11 @@ jobs:
           cache: true
 
       - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
 
       - name: terraform fmt check
-        run: terraform fmt -recursive -check examples/ modules/
+        run: terraform fmt -recursive -check examples/
 
       - name: Validate examples against dev-built provider
         run: |

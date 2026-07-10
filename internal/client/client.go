@@ -151,7 +151,7 @@ func (c *Client) do(ctx context.Context, method, path string, query url.Values, 
 		}
 
 		respBody, readErr := io.ReadAll(resp.Body)
-		resp.Body.Close()
+		_ = resp.Body.Close()
 		if readErr != nil {
 			return readErr
 		}

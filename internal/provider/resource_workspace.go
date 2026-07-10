@@ -192,5 +192,5 @@ func tagsFromMap(ctx context.Context, m types.Map) (map[string]string, diagList)
 		return nil, nil
 	}
 	diags := m.ElementsAs(ctx, &tags, false)
-	return tags, diagList(diags)
+	return tags, diags
 }
